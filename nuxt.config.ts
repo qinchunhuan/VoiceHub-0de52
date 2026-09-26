@@ -576,13 +576,20 @@ export default defineNuxtConfig({
     '~/assets/css/sf-pro-icons.css',
     //'~/assets/css/markdown.css'
   ],
-vite: {
-    build: {
-      rolldownOptions: {
-        external: ['lucide-vue-next']
-      }
-    }
+build: {
+    transpile: ['lucide-vue-next'],
   },
+
+  css: [
+    '~/assets/css/variables.css',
+    '~/assets/css/components.css',
+    '~/assets/css/main.css',
+    '~/assets/css/transitions.css',
+    '~/assets/css/mobile-admin.css',
+    '~/assets/css/print-fix.css',
+    '~/assets/css/sf-pro-icons.css',
+    //'~/assets/css/markdown.css'
+  ],
   // 配置运行时配置
   runtimeConfig: {
     // 服务器私有键（不会暴露到客户端）
