@@ -42,6 +42,7 @@
     "@breezystack/lamejs": "^1.2.7",
     "@jitl/quickjs-singlefile-browser-release-sync": "0.32.0",
     "@lucide/vue": "^1.48.0",
+    "lucide-vue-next": "^0.469.0",
     "@neteasecloudmusicapienhanced/api": "^4.40.1",
     "@netlify/functions": "^2.8.2",
     "@nuxt/kit": "4.5.0",
