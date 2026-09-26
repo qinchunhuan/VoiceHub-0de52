@@ -4,7 +4,7 @@
 
 <div align="center">
 
-[交流群](https://qm.qq.com/cgi-bin/qm/qr?k=5DV4vGlqn82YaNi7a3xW4zjmS8ZUr6cz&jump_from=webapi&authKey=axAl02PMsIVVAwrXij0YUUrOrUTeLpqLipu5XcTvyBUOzeWaOnicBB+fmBwNJs5S) | [使用学校收集表](https://laoshuikaixue.feishu.cn/share/base/form/shrcniUKakpNYP6KH7qrU20qq5e) | [项目宣传片](https://www.bilibili.com/video/BV1B9ArzMEkA)
+[交流群](https://qm.qq.com/cgi-bin/qm/qr?k=5DV4vGlqn82YaNi7a3xW4zjmS8ZUr6cz&jump_from=webapi&authKey=axAl02PMsIVVAwrXij0YUUrOrUTeLpqLipu5XcTvyBUOzeWaOnicBB+fmBwNJs5S) | [使用学校收集表](https://laoshuikaixue.feishu.cn/share/base/form/shrcniUKakpNYP6KH7qrU20qq5e) | [项目宣传片](https://www.bilibili.com/video/BV1B9ArzMEkA) | [赞助支持](#sponsor)
 
 </div>
 
@@ -25,7 +25,7 @@
   - **OAuth 账户系统**：支持通过 GitHub、Casdoor 等 OAuth 提供商快速创建和登录账户
     - **直接创建账户**：用户通过 OAuth 认证后可创建新账户，但仍需设置本地用户名和密码
     - **账户绑定**：已有账户的用户可将 OAuth 身份绑定到现有账户，实现多平台统一登录
-    - **WebAuthn 支持**：支持 Windows Hello、生物识别和硬件安全密钥（如 YubiKey）登录
+    - **WebAuthn 支持**：支持 HarmonyOS Passkey、Windows Hello、生物识别和硬件安全密钥（如 YubiKey）登录
     - **双因素认证（2FA）**：支持 TOTP 和邮箱验证，增强账户安全性
   - **网易云音乐登录**：支持扫码登录，登录后可搜索个人歌单、收藏及播客电台内容
     - **一键添加到歌单**：登录后支持将排期中的网易云音乐歌曲一键添加到个人歌单
@@ -51,7 +51,7 @@
 - **账户安全**：
   - bcrypt 密码加密
   - 双因素认证（TOTP、邮箱验证）
-  - WebAuthn 支持（生物识别、硬件密钥）
+  - WebAuthn 支持（HarmonyOS Passkey、生物识别、硬件密钥）
   - 账户锁定和风险控制
 - **身份关联**：支持将多个 OAuth 身份绑定到同一账户，实现统一登录
 - **黑名单管理**：支持歌曲和艺术家黑名单，自动过滤不当内容
@@ -63,6 +63,7 @@
   - 草稿状态不影响公开展示，可随时修改和完善
   - 支持草稿发布为正式排期，确保排期质量
 - **播出时段**：灵活配置播出时段，**支持多时段管理**
+- **排期复制**：支持将某日期的排期完整复制到另一日期，原排期保留不变
 - **打印排期**：支持自定义纸张大小、内容选择、编写备注和PDF导出的打印功能
 - **学期管理**：管理员可设置当前学期，自动关联点歌记录
 - **公开展示**：公开展示歌曲播放排期，按日期分组展示
@@ -96,7 +97,7 @@
 - **Nuxt 4**：Vue.js全栈框架，提供SSR和SPA支持
 - **Vue 3**：响应式前端框架，使用Composition API
 - **TypeScript**：类型安全的JavaScript，提供完整的类型定义
-- **Tailwind CSS**：实用优先的CSS框架，响应式设计
+- **UNO CSS**：实用优先的CSS框架，响应式设计
 - **Vue Router**：前端路由管理
 
 ### 后端技术
@@ -105,7 +106,7 @@
 - **Drizzle ORM**：现代化数据库ORM，提供类型安全的数据库操作和高性能查询
 - **Neon Database**：Serverless PostgreSQL数据库，支持自动启停和无缝扩展
 - **PostgreSQL**：关系型数据库，支持复杂查询和事务处理
-- **Redis**：高性能缓存数据库，提升系统响应速度（可选，暂不推荐，可能存在潜在的问题）
+- **Redis**：可选的分布式短期状态服务，仅用于验证码、限流和临时安全状态
 - **JWT**：标准JWT认证机制，支持24小时token有效期
 - **bcrypt**：密码加密，安全的哈希算法
 - **Multer**：文件上传处理，支持多种存储方式
@@ -118,7 +119,7 @@
 - **后端**：使用 Nuxt Server API 构建 RESTful API 服务
 - **数据库**：使用 Drizzle ORM + Neon Database，提供类型安全和高性能的数据库操作
 - **认证**：标准 JWT 认证系统
-- **缓存**：可选的 Redis 缓存层，提升系统响应速度
+- **数据读取**：PostgreSQL 是唯一业务数据源，歌曲、排期和用户状态不使用 Redis 缓存
 - **部署**：支持 Vercel、Netlify、EdgeOne 等 Serverless 平台一键部署，并提供 Docker、Linux 一键脚本及飞牛 FnOS (fpk安装包) 等多种部署方式
 
 ## 部署指南
@@ -136,26 +137,21 @@
 1. `DATABASE_URL`：PostgreSQL数据库连接地址
 2. `JWT_SECRET`：JWT令牌签名密钥
 
-### Claw 部署
+### Linux 服务器部署
 
-[![Claw](https://ap-southeast-1.run.claw.cloud/logo.svg)](https://ap-southeast-1.run.claw.cloud/)
+本项目提供了针对 Ubuntu/Debian 服务器的一键部署脚本，支持自动安装 Node.js 22、配置环境变量、安装依赖和构建项目。
 
-1. **点击部署按钮**：选择上方的 Claw 部署按钮
-2. **打开应用程序启动板**：打开 App Launchpad （应用程序启动板）
-3. **创建应用**：选 Create App （创建应用）
-4. **相关配置**：
-   ```
-   Application Name：VoiceHub 或 其它
-   Image Name: ghcr.io/laoshuikaixue/voicehub:latest
-   Usage：按需调整
-   Network：3000 ，开 Public Access
-   Environment Variables：
-      DATABASE_URL=postgresql://user:password@postgres:5432/voicehub
-      JWT_SECRET=your-jwt-secret-here
-      # 按实际情况填写
-   ```
-5. **等待部署**：平台会自动构建和部署应用
-6. **访问应用**：部署完成后，您将获得一个可访问的 URL
+**一键命令：**
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/laoshuikaixue/VoiceHub/main/sh/main.sh)
+```
+
+如果你需要 gh-proxy 加速，使用以下命令：
+
+```bash
+bash <(curl -sL https://gh-proxy.com/https://raw.githubusercontent.com/laoshuikaixue/VoiceHub/main/sh/main.sh)
+```
 
 ### Docker 部署
 
@@ -164,6 +160,12 @@ VoiceHub 支持通过 Docker 进行容器化部署，提供了多种部署方式
 #### 方式一：使用 Docker Compose（推荐）
 
 这是最简单的部署方式，会自动创建应用和数据库容器。
+
+##### 使用预构建镜像
+
+查看 [docker-compose](/docker-compose) 并选择适合的配置文件
+
+##### 本地构建镜像
 
 1. 克隆项目
 
@@ -176,7 +178,7 @@ cd VoiceHub
 
 ```yaml
 environment:
-  - DATABASE_URL=postgresql://user:password@postgres:5432/voicehub
+  - DATABASE_URL=postgresql://user:password@postgres:5432/voicehub # 可能需要 ?sslmode=disable
   - JWT_SECRET=your-jwt-secret-here # 请修改为强随机字符串
   - NODE_ENV=production
 ```
@@ -205,6 +207,7 @@ docker-compose up -d
 docker run -d \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require" \
+  # 可能需要替换成 ?sslmode=disable
   -e JWT_SECRET="your-very-secure-jwt-secret-key" \
   -e NODE_ENV=production \
   --name voicehub \
@@ -217,6 +220,7 @@ docker run -d \
 docker run -d \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require" \
+  # 可能需要替换成 ?sslmode=disable
   -e JWT_SECRET="your-very-secure-jwt-secret-key" \
   -e NODE_ENV=production \
   --name voicehub \
@@ -238,45 +242,232 @@ docker build --no-cache -t voicehub .
 docker run -d \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require" \
+  # 可能需要替换成 ?sslmode=disable
   -e JWT_SECRET="your-very-secure-jwt-secret-key" \
   -e NODE_ENV=production \
   --name voicehub \
   voicehub
 ```
 
-### Linux 服务器部署
+### Podman 部署
 
-本项目提供了针对 Ubuntu/Debian 服务器的一键部署脚本，支持自动安装 Node.js 22、配置环境变量、安装依赖和构建项目。
+Podman 是一个与 Docker 兼容的容器引擎，无需守护进程，支持 rootless 模式（无需 root 权限）。VoiceHub 的 Docker 配置文件可以直接用于 Podman。
 
-**一键部署命令：**
-
-```bash
-bash <(curl -sL https://raw.githubusercontent.com/laoshuikaixue/VoiceHub/main/sh/deploy.sh)
-```
-
-**更新部署：**
-项目更新时，可使用更新脚本快速更新：
+#### 使用 Podman Compose 部署
 
 ```bash
-# 一键更新命令
-bash <(curl -sL https://raw.githubusercontent.com/laoshuikaixue/VoiceHub/main/sh/update.sh)
+podman compose -f docker-compose.yml up -d
 ```
 
-**日常管理：**
-部署完成后，可使用 `voicehub` 命令进行日常管理（需在部署时安装）
+> **说明**：`podman compose` 完全兼容 `docker-compose.yml` 文件，无需修改配置。
+
+#### rootless 模式
+
+Podman 默认以当前用户身份运行，无需 `sudo`，安全性更高。但容易遇到文件权限问题（特别是挂载卷时）。
 
 ### 飞牛 (FnOS) 部署
 
 VoiceHub 现已支持飞牛 OS (FnOS) 的 `.fpk` 安装包。
+
 - 从 [GitHub Actions](https://github.com/laoshuikaixue/VoiceHub/actions/workflows/build-fpk.yml) 获取最新版本
+
+### Nix / NixOS
+
+VoiceHub 提供了一个 Nix flake，用于构建、开发和在 NixOS 上部署。
+
+#### 前提条件
+
+- [Nix](https://nixos.org/download)（带 flake 支持）
+- PostgreSQL 数据库
+
+#### NixOS 部署
+
+将 VoiceHub 添加为 flake input：
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    voicehub.url = "github:laoshuikaixue/VoiceHub";
+  };
+
+  outputs = { self, nixpkgs, voicehub, ... }: {
+    nixosConfigurations.my-server = nixpkgs.lib.nixosSystem {
+      specialArgs = { inherit voicehub; };
+      modules = [
+        voicehub.nixosModules.default
+        ./configuration.nix
+      ];
+    };
+  };
+}
+```
+
+> [!TIP]
+> 启用 Binary Cache 可大幅加快构建速度，详见下方[使用 Binary Cache 加速构建](#使用-binary-cache-加速构建)。
+
+然后在 NixOS 配置中使用模块，根据数据库管理方式选择对应场景。
+
+```nix
+# 场景 A：自动配置本地 PostgreSQL
+# environmentFile 只需提供 JWT_SECRET，DATABASE_URL 由模块自动构造
+{ pkgs, inputs, config, ... }: {
+  imports = [ inputs.voicehub.nixosModules.default ];
+
+  services.voicehub = {
+    enable = true;
+    database.createLocally = true;
+    environmentFile = config.sops.templates."voicehub-env".path;
+    runDeployScript = true;
+  };
+
+  sops.templates."voicehub-env" = {
+    content = ''
+      JWT_SECRET=${config.sops.placeholder."voicehub/jwt-secret"}
+    '';
+  };
+}
+```
+
+```nix
+# 场景 B：手动管理数据库（Neon / Docker / 远程 PG）
+# environmentFile 需同时提供 DATABASE_URL 和 JWT_SECRET
+{ pkgs, inputs, config, ... }: {
+  imports = [ inputs.voicehub.nixosModules.default ];
+
+  services.voicehub = {
+    enable = true;
+    environmentFile = config.sops.templates."voicehub-env".path;
+    runDeployScript = true;
+  };
+
+  sops.templates."voicehub-env" = {
+    content = ''
+      DATABASE_URL=${config.sops.placeholder."voicehub/database-url"}
+      JWT_SECRET=${config.sops.placeholder."voicehub/jwt-secret"}
+    '';
+  };
+}
+```
+
+环境文件 (`sops.templates."voicehub-env".content`) 格式参考：
+
+```env
+DATABASE_URL=postgresql://voicehub:secret@localhost:5432/voicehub
+JWT_SECRET=your-very-secure-jwt-secret-key
+NUXT_PUBLIC_HOST=https://voicehub.example.com
+```
+
+推荐使用 [sops-nix](https://github.com/Mic92/sops-nix) 管理 secrets，避免明文存储在 Nix store 中。
+
+模块会自动设置 `DynamicUser`、`ProtectSystem=strict`、`NoNewPrivileges` 等安全加固。
+防火墙默认不开放端口，在配置中启用以允许外部访问：
+
+```nix
+services.voicehub.openFirewall = true;
+```
+
+应用配置并部署：
+
+```bash
+sudo nixos-rebuild switch --flake .#my-server
+```
+
+查看服务状态和日志：
+
+```bash
+systemctl status voicehub
+journalctl -u voicehub -f
+```
+
+默认监听 `0.0.0.0:3000`，可通过 `services.voicehub.host` 和 `services.voicehub.port` 修改。
+
+#### 使用 Binary Cache 加速构建
+
+VoiceHub CI 会将构建产物推送到 [Cachix](https://cachix.org) binary cache，
+下游用户可直接下载预构建的 `pnpmDeps` 和 `voicehub` 包，跳过本地构建。
+
+在你的 flake 中添加 `nixConfig` 以启用：
+
+```nix
+{
+  nixConfig = {
+    extra-substituters = [ "https://voicehub.cachix.org" ];
+    extra-trusted-public-keys = [ "voicehub.cachix.org-1:CKw4/RvZy5c0WVpyo5ZyLbJgdpHZ/+epofIwGOeIOhU=" ];
+  };
+  inputs = {
+    voicehub.url = "github:laoshuikaixue/VoiceHub";
+  };
+}
+```
+
+> [!IMPORTANT]
+> 请勿通过 `follows` 覆盖 VoiceHub 的 `nixpkgs` input。缓存中的产物使用
+> VoiceHub 自带的 nixpkgs 构建，替换后 hash 不同，无法命中缓存。
+
+#### 其他功能
+
+##### 开发环境
+
+进入开发 shell（自动提供 Node.js、pnpm、PostgreSQL 客户端）：
+
+```bash
+nix develop
+```
+
+然后在 shell 内：
+
+```bash
+cp .env.example .env   # 配置 DATABASE_URL + JWT_SECRET
+pnpm install
+pnpm run dev           # 启动开发服务器 (port 3000)
+```
+
+##### 构建
+
+```bash
+nix build              # 产出 result/bin/voicehub
+```
+
+构建产物可以直接运行（需要 `DATABASE_URL` 等环境变量）：
+
+```bash
+DATABASE_URL="postgresql://..." JWT_SECRET="..." ./result/bin/voicehub
+```
+
+或使用附带的环境文件：
+
+```bash
+nix run .#default --impure
+```
+
+> `nix run` 需要设置 `DATABASE_URL` 环境变量，否则会启动失败。
+
+##### 更新 pnpm 依赖哈希
+
+当 `pnpm-lock.yaml` 更新后，需要同步 `flake.nix` 中的 `pnpmDeps` 哈希。Nix CI 在构建因哈希过期失败时，会自动计算新哈希、验证构建并提交回触发分支；fork PR 与 bot 自身触发的运行只报错不写回，需要人工更新。
+
+如果需要在本地手动更新，可以先将 `flake.nix` 中 `pnpmDeps.hash` 临时改为空字符串，然后运行：
+
+```bash
+nix build .#voicehub
+```
+
+Nix 会因固定输出哈希不匹配而失败，并输出 `got: sha256-...`，将该值写回 `pnpmDeps.hash` 即可。也可以使用 impure 构建辅助命令（需要网络和已安装的 pnpm）：
+
+```bash
+nix run .#build                # 在项目目录中执行，生成 .output 目录
+```
+
+---
 
 ### 本地开发部署
 
 #### 前提条件
 
-- Node.js 20+
+- Node.js 22.11+
 - PostgreSQL 数据库（推荐使用 Neon）
-- Redis 数据库（可选，暂不推荐）
+- Redis 数据库（可选；多实例或 Serverless 部署建议配置）
 
 #### 快速开始
 
@@ -306,6 +497,7 @@ cp .env.example .env
 ```env
 # 数据库连接地址（必填）
 DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
+# 可能需要替换成 ?sslmode=disable
 
 # JWT 认证密钥（必填）
 JWT_SECRET="your-very-secure-jwt-secret-key"
@@ -370,6 +562,9 @@ pnpm run start
 ### 数据库管理命令
 
 ```bash
+# 新的数据库初始化
+pnpm run init-help
+
 # 生成迁移文件
 pnpm run db:generate
 
@@ -466,82 +661,113 @@ VoiceHub 实现了细粒度的权限控制系统：
 
 ## 环境变量说明
 
-| 变量名          | 必填 | 说明                              | 示例值                                                                 |
-|--------------|----|---------------------------------|---------------------------------------------------------------------|
-| DATABASE_URL | 是  | PostgreSQL数据库连接字符串              | `postgresql://username:password@host:port/database?sslmode=require` |
-| JWT_SECRET   | 是  | JWT令牌签名密钥，建议使用强随机字符串            | `your-very-secure-jwt-secret-key`                                   |
-| NODE_ENV     | 否  | 运行环境，development或production     | `production`                                                        |
-| REDIS_URL    | 否  | Redis缓存服务连接字符串，填写后自动启用Redis缓存功能 | `redis://default:password@host:port`                                |
-| NITRO_PRESET | 否  | Nitro预设                         | `vercel`                                                            |
-| NUXT_PUBLIC_HOST | 否  | 用于 CORS 和反向代理的主机名验证 | `your-app.com`                                                            |
+| 变量名                 | 必填 | 说明                                                    | 示例值                                                                                                                                          |
+| ---------------------- | ---- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| DATABASE_URL           | 是   | PostgreSQL数据库连接字符串                              | `postgresql://username:password@host:port/database?sslmode=require`                                                                             |
+| JWT_SECRET             | 是   | JWT令牌签名密钥，建议使用强随机字符串                   | `your-very-secure-jwt-secret-key`                                                                                                               |
+| TRUSTED_CLIENT_IP_HEADERS | 否 | 受信 CDN/反向代理真实 IP 头，多个值用逗号分隔；未配置时使用 TCP 连接地址 | `eo-connecting-ip` |
+| NODE_ENV               | 否   | 运行环境，development或production                       | `production`                                                                                                                                    |
+| REDIS_URL              | 否   | Redis短期状态服务连接字符串，用于验证码、限流和临时锁定 | `redis://default:password@host:port`                                                                                                            |
+| REDIS_KEY_PREFIX       | 否   | Redis键命名空间，多环境共用Redis时应分别设置            | `voicehub:v2:`                                                                                                                                  |
+| NITRO_PRESET           | 否   | Nitro预设                                               | `vercel`                                                                                                                                        |
+| NUXT_PUBLIC_HOST       | 否   | 显式配置站点外部地址后启用内部 API 的 CORS 来源校验；未配置时仅对回环 Host（反向代理常见场景）跳过，云平台公开 Host 仍校验 | `https://your-app.com` |
+| NUXT_PUBLIC_SEO_CONFIG | 否   | 用于自定义 PWA/SEO 配置的 JSON 字符串                   | `{"title":"VoiceHub校园广播站点歌系统","shortName":"校园广播","description":"校园广播站点歌系统 - 让你的声音被听见","logo":"/images/logo.png"}` |
 
 ## OAuth 配置
 
 系统支持通过 OAuth 提供商（如 GitHub、Casdoor、Google 等）快速创建账户和登录：
 
+OAuth 运行时配置统一保存在管理员后台数据库中；环境变量仅用于兼容旧部署和后台一键导入，导入后以后台保存值为准。
+
 1. **在管理员后台配置**：
-  - 导航到系统设置 > OAuth 配置
-  - 配置基础设置：
-    - **OAuth 重定向 URI**：`https://yourdomain.com/api/auth/[provider]/callback`
-    - **OAuth State 密钥**：强随机字符串，用于 state 参数加密
-  - 启用需要的 OAuth 提供商并填写相应凭证：
-    - GitHub：Client ID / Secret
-    - Casdoor：Server URL / Client ID / Secret / Organization Name
-    - Google：Client ID / Secret
-    - 第三方 OAuth2：完整的 OAuth 端点和字段映射
+
+- 导航到系统设置 > OAuth 配置
+- 配置基础设置：
+  - **OAuth 重定向 URI**：`https://yourdomain.com/api/auth/[provider]/callback`
+  - **OAuth State 密钥**：强随机字符串，用于 state 参数加密
+- 启用需要的 OAuth 提供商并填写相应凭证：
+  - GitHub：Client ID / Secret
+  - Casdoor：Server URL / Client ID / Secret / Organization Name
+  - Google：Client ID / Secret
+  - 聚合登陆：AppID / AppKey / 接口地址，并可同时启用 QQ、微信、支付宝等平台
+  - 第三方 OAuth2：完整的 OAuth 端点和字段映射
 
 2. **OAuth 提供商配置**：
-  在 OAuth 提供商的开发者控制台配置重定向 URI，确保与后台配置一致
+   在 OAuth 提供商的开发者控制台配置重定向 URI，确保与后台配置一致
 
 3. **账户创建流程**：
-  - 用户点击 OAuth 登录按钮
-  - 完成 OAuth 认证后，若身份未关联，用户可选择：
-    - 创建新账户：设置用户名和密码，直接创建新账户
-    - 绑定现有账户：输入现有用户名和密码进行绑定
-  - 成功后自动登录
+
+- 用户点击 OAuth 登录按钮
+- 完成 OAuth 认证后，若身份未关联，用户可选择：
+  - 创建新账户：设置用户名和密码，直接创建新账户
+  - 绑定现有账户：输入现有用户名和密码进行绑定
+- 成功后自动登录
 
 4. **安全特性**：
-  - 所有密码使用 bcrypt 加密
-  - OAuth 状态参数使用 AES 加密校验
-  - 绑定令牌有 10 分钟有效期
-  - 支持账户锁定和风险控制
+
+- 所有密码使用 bcrypt 加密
+- OAuth 状态参数使用 AES 加密校验
+- 绑定令牌有 10 分钟有效期
+- 支持账户锁定和风险控制
 
 ## 项目结构
 
 ```
 VoiceHub/
+├── .github/                   # GitHub 配置目录
+│   └── workflows/             # GitHub Actions 工作流
+│       ├── build-fpk.yml      # FnOS FPK 安装包构建
+│       ├── docker-build.yml   # Docker 镜像构建
+│       ├── docker-postgres.yml # PostgreSQL Docker 镜像构建
+│       └── nix.yml            # Nix 构建校验与 pnpmDeps 哈希同步
 ├── app/                       # Nuxt 4 应用主目录
 │   ├── app.vue                # 应用入口文件
 │   ├── assets/                # 静态资源目录
 │   │   └── css/               # CSS样式文件
 │   │       ├── components.css      # 组件样式
 │   │       ├── lyric-player.module.css  # 歌词播放器样式
-│   │       ├── main.css           # 主样式文件
+│   │       ├── main.css           # 主样式文件（含主题引入）
+│   │       ├── markdown.css       # Markdown样式
 │   │       ├── mobile-admin.css   # 移动端管理样式
 │   │       ├── print-fix.css      # 打印样式修复
 │   │       ├── sf-pro-icons.css   # SF Pro图标字体
-│   │       ├── theme-protection.css # 主题保护样式
+│   │       ├── theme-protection.css # 主题保护样式（浏览器兼容性）
 │   │       ├── transitions.css    # 过渡动画样式
-│   │       ├── variables.css      # CSS变量定义
-│   │       └── year-review.css    # 年度回顾样式
+│   │       ├── variables.css      # 全局基础样式与媒体查询
+│   │       ├── year-review.css    # 年度回顾样式
+│   │       └── themes/            # 主题目录
+│   │           ├── dark.css         # 深色主题设计变量
+│   │           ├── light.css        # 亮色主题设计变量
+│   │           └── ModernLight.css # 现代浅色主题设计变量
 │   ├── components/            # Vue组件目录
+│   │   ├── Account/           # 账号管理组件
+│   │   │   └── SocialBindings.vue     # 社交账号绑定（邮箱/MeoW）
 │   │   ├── Admin/             # 管理员功能组件
 │   │   │   ├── ApiKeyManager.vue      # API密钥管理
+│   │   │   ├── BackupAutoSettings.vue # 自动备份设置
 │   │   │   ├── BackupManager.vue      # 数据库备份管理
 │   │   │   ├── BatchUpdateModal.vue   # 批量更新模态框
 │   │   │   ├── BlacklistManager.vue   # 黑名单管理
+│   │   │   ├── CardCodesManager.vue   # 点歌券管理
 │   │   │   ├── DataAnalysisPanel.vue  # 数据分析面板
 │   │   │   ├── DatabaseManager.vue    # 数据库管理
+│   │   │   ├── DuplicateSongsModal.vue # 重复歌曲检测弹窗
 │   │   │   ├── EmailTemplateManager.vue # 邮件模板管理
+│   │   │   ├── MusicSourceController.vue # 音源控制管理
+│   │   │   ├── MusicSourcePlugins.vue # LX Music 与 MusicFree 插件音源管理
+│   │   │   ├── NotificationHistory.vue # 通知发送历史与用户已读明细
 │   │   │   ├── NotificationSender.vue # 通知发送管理
 │   │   │   ├── OAuthConfigManager.vue # OAuth 配置管理
+│   │   │   ├── OAuthBindingsModal.vue # OAuth 绑定详情弹窗
 │   │   │   ├── OverviewDashboard.vue  # 管理概览仪表板
 │   │   │   ├── PlayTimeManager.vue    # 播放时间管理
 │   │   │   ├── ProviderConfigSection.vue # OAuth 提供商配置组件
-│   │   │   ├── RequestTimeManager.vue # 点歌时间管理
+│   │   │   ├── RequestTimeManager.vue # 投稿开放时段 & 重复投稿限制管理
 │   │   │   ├── ScheduleForm.vue       # 排期表单
 │   │   │   ├── ScheduleItemPrint.vue  # 排期项目打印
 │   │   │   ├── ScheduleManager.vue    # 排期管理
+│   │   │   ├── SchedulePlaylistExportModal.vue # 排期歌单导出弹窗（CSV）
+│   │   │   ├── SchedulePlaylistFilterModal.vue # 排期歌单过滤器
 │   │   │   ├── SchedulePrinter.vue    # 排期打印功能
 │   │   │   ├── ScheduleTablePrint.vue # 排期表格打印功能
 │   │   │   ├── SemesterManager.vue    # 学期管理
@@ -552,6 +778,9 @@ VoiceHub/
 │   │   │   ├── SongManagement.vue     # 歌曲管理
 │   │   │   ├── SubmissionRemarkDialog.vue # 投稿备注弹窗
 │   │   │   ├── UserManager.vue        # 用户管理
+│   │   │   ├── UserApprovalModal.vue  # 用户注册审核弹窗
+│   │   │   ├── UserExportModal.vue    # 用户导出弹窗
+│   │   │   ├── GradeClassManager.vue  # 年级班级配置管理
 │   │   │   ├── UserSongsModal.vue     # 用户歌曲查看弹窗
 │   │   │   └── VotersModal.vue        # 投票人员查看弹窗
 │   │   ├── AMLL/              # Apple Music-Like Lyrics组件
@@ -567,7 +796,13 @@ VoiceHub/
 │   │   │   ├── ChangePasswordForm.vue # 修改密码表单
 │   │   │   ├── LoginForm.vue         # 登录表单
 │   │   │   ├── OAuthBindingCard.vue  # OAuth绑定卡片
+│   │   │   ├── CaptchaInput.vue      # 图形验证码输入组件
+│   │   │   ├── TurnstileWidget.vue   # Cloudflare Turnstile验证组件
+│   │   │   ├── EsaCaptchaWidget.vue  # 阿里云 ESA AI验证码组件
 │   │   │   ├── OAuthButtons.vue      # OAuth登录按钮组
+│   │   │   ├── OAuthQuickLogin.vue   # 微信/QQ内置浏览器快速登录按钮
+│   │   │   ├── OAuthBindReminderModal.vue # 微信/QQ内置浏览器账号密码登录绑定引导弹窗
+│   │   │   ├── LegalConsentModal.vue # 登录条款全局确认弹窗
 │   │   │   ├── TwoFactorSetup.vue    # 双重认证设置组件
 │   │   │   └── TwoFactorVerify.vue   # 双重认证验证组件
 │   │   ├── Common/            # 通用组件
@@ -579,6 +814,7 @@ VoiceHub/
 │   │   │       ├── AMLyric.vue        # Apple Music风格歌词
 │   │   │       └── DefaultLyric.vue   # 默认风格歌词
 │   │   ├── Songs/             # 歌曲相关组件
+│   │   │   ├── AlbumDetailsModal.vue   # 网易云音乐专辑详情弹窗
 │   │   │   ├── BilibiliEpisodesModal.vue # Bilibili剧集选择弹窗
 │   │   │   ├── DuplicateSongModal.vue # 重复歌曲处理对话框
 │   │   │   ├── ImportSongsModal.vue   # 导入歌曲弹窗
@@ -586,6 +822,7 @@ VoiceHub/
 │   │   │   ├── NeteaseUploadDialog.vue # 网易云云盘上传弹窗
 │   │   │   ├── PlaylistSelectionModal.vue # 歌单选择弹窗
 │   │   │   ├── PodcastEpisodesModal.vue # 播客节目弹窗
+│   │   │   ├── QQMusicLoginModal.vue # QQ音乐登录弹窗
 │   │   │   ├── RecentSongsModal.vue   # 最近播放弹窗
 │   │   │   ├── RequestForm.vue        # 点歌表单
 │   │   │   ├── ScheduleList.vue       # 排期列表展示
@@ -597,11 +834,16 @@ VoiceHub/
 │   │   │   │   ├── PlayerInfo.vue     # 播放器信息组件
 │   │   │   │   └── VolumeControl.vue  # 播放器音量控制组件
 │   │   │   ├── Common/        # 通用UI组件
+│   │   │   │   ├── AppSpinner.vue      # 通用加载转圈组件
+│   │   │   │   ├── CollapsibleSection.vue # 可折叠区域组件
 │   │   │   │   ├── CustomSelect.vue   # 自定义选择器
 │   │   │   │   ├── DataTable.vue      # 通用数据表格组件
 │   │   │   │   ├── ErrorBoundary.vue  # 错误边界组件
+│   │   │   │   ├── InputField.vue     # 通用输入框组件
 │   │   │   │   ├── LoadingState.vue   # 加载状态组件
+│   │   │   │   ├── MethodCard.vue     # 可展开卡片组件（带开关）
 │   │   │   │   ├── Pagination.vue     # 翻页组件
+│   │   │   │   ├── PasswordField.vue  # 密码输入框组件
 │   │   │   │   ├── Popover.vue        # 弹出框组件
 │   │   │   │   ├── SearchFilter.vue   # 搜索过滤组件
 │   │   │   │   └── StatCard.vue       # 统计卡片组件
@@ -610,13 +852,24 @@ VoiceHub/
 │   │   │   ├── BilibiliIframeModal.vue # Bilibili视频预览弹窗
 │   │   │   ├── ConfirmDialog.vue      # 确认对话框
 │   │   │   ├── Icon.vue               # 图标组件
+│   │   │   ├── ImportantNotificationModal.vue # 重要通知全屏弹窗
 │   │   │   ├── LyricsModal.vue        # 全屏歌词模态框组件
 │   │   │   ├── MarqueeText.vue        # 滚动文本显示组件
 │   │   │   ├── Notification.vue       # 单个通知组件
 │   │   │   ├── NotificationContainer.vue # 通知容器组件
 │   │   │   ├── PageTransition.vue     # 页面过渡动画
-│   │   │   └── ProgressBar.vue        # 进度条组件
+│   │   │   ├── ProgressBar.vue        # 进度条组件
+│   │   │   ├── AppLoadingScreen.vue   # 启动加载屏幕组件
+│   │   │   ├── SongComments.vue       # 网易云与QQ音乐评论组件
+│   │   │   └── WarpCanvas.vue         # 动态画布背景组件
 │   │   ├── year-review/       # 年度回顾组件
+│   │   │   ├── IntroSlide.vue     # 开场页
+│   │   │   ├── FirstSongSlide.vue # 第一首歌页
+│   │   │   ├── ArtistSlide.vue    # 艺术家页
+│   │   │   ├── StatsSlide.vue     # 统计页
+│   │   │   ├── MiscSlide.vue      # 杂项页
+│   │   │   ├── OutroSlide.vue     # 结尾页
+│   │   │   └── ShareCard.vue      # 分享卡片
 │   │   └── SiteFooter.vue         # 站点页脚
 │   ├── composables/           # Vue 3 组合式API
 │   │   ├── useAdmin.ts         # 管理员功能hooks
@@ -629,7 +882,11 @@ VoiceHub/
 │   │   ├── useAuth.ts          # 认证功能hooks
 │   │   ├── useBackgroundRenderer.ts # 背景渲染hooks
 │   │   ├── useBilibiliPreview.ts # Bilibili视频预览hooks
+│   │   ├── useChkszSource.ts   # ChKSz音源hooks
 │   │   ├── useErrorHandler.ts  # 错误处理hooks
+│   │   ├── useImportantNotification.ts # 重要通知全局状态与已读处理
+│   │   ├── useLegalConsentPrompt.js # 全局登录条款确认弹窗状态hooks
+│   │   ├── useLocaleText.ts   # i18n 文案访问与服务端错误码本地化hooks
 │   │   ├── useLyricManager.ts  # 歌词管理hooks
 │   │   ├── useLyricPlayer.ts   # 类Apple Music风格歌词播放器hooks
 │   │   ├── useLyrics.ts        # 歌词功能hooks
@@ -638,19 +895,32 @@ VoiceHub/
 │   │   ├── useMusicSources.ts    # 音乐源管理hooks
 │   │   ├── useMusicWebSocket.ts  # 音乐WebSocket hooks
 │   │   ├── useNotifications.ts # 通知功能hooks
+│   │   ├── useOAuthBindReminder.ts # 微信/QQ绑定引导浏览器存储状态hooks
+│   │   ├── usePlatformConfig.ts    # 平台管理配置hooks
 │   │   ├── usePermissions.ts   # 权限管理hooks
+│   │   ├── usePasswordStrength.ts # 密码强度检测hooks
+│   │   ├── usePlayerLayout.ts  # 播放器布局（固定底部/自由拖拽）偏好hooks
 │   │   ├── useProgress.ts      # 进度管理hooks
 │   │   ├── useProgressEvents.ts # 进度事件hooks
 │   │   ├── useRequestDedup.ts  # 请求去重hooks
+│   │   ├── useSafeLocale.ts    # 安全 i18n 文本包装hooks
+│   │   ├── useScrollMemory.ts  # 页面滚动位置记忆hooks
 │   │   ├── useSemesters.ts     # 学期管理hooks
 │   │   ├── useSiteConfig.js    # 站点配置hooks
 │   │   ├── useSongPlayer.ts    # 歌曲播放器hooks
 │   │   ├── useSongs.ts         # 歌曲管理hooks
+│   │   ├── useSyncedTime.ts    # 服务器时间对时hooks
+│   │   ├── useTheme.ts         # 主题管理（深色/浅色/现代浅色切换）
+│   │   ├── useThemeImage.ts    # 主题图片获取
 │   │   ├── useToast.ts         # Toast提示hooks
+│   │   ├── useUserFilters.ts  # 用户过滤器hooks
+│   │   └── useZIndex.ts        # 浮层动态层级hooks
 │   ├── drizzle/               # 数据库相关
 │   │   ├── db.ts               # 数据库连接
 │   │   ├── schema.ts           # 数据库模型
 │   │   └── migrations/         # 数据库迁移文件
+│   │       ├── *.sql           # Drizzle 迁移脚本
+│   │       └── meta/           # Drizzle 迁移快照
 │   ├── layouts/               # 布局组件
 │   │   └── default.vue         # 默认布局模板
 │   ├── middleware/            # 中间件
@@ -664,40 +934,87 @@ VoiceHub/
 │   │   ├── dashboard.vue       # 用户仪表盘
 │   │   ├── forgot-password.vue # 找回密码页面
 │   │   ├── index.vue           # 首页
+│   │   ├── legal/              # 协议文档页面
+│   │   │   └── [slug].vue      # 协议文档内容页（按 slug 动态渲染）
 │   │   ├── login.vue           # 登录页面
 │   │   ├── notification-settings.vue # 通知设置页面
 │   │   ├── reset-password.vue  # 重置密码页面
 │   │   └── year-review.vue     # 年度回顾页面
 │   ├── plugins/               # Nuxt插件
 │   │   ├── auth.client.ts      # 客户端认证插件
-│   │   └── auth.server.ts      # 服务端认证插件
+│   │   ├── auth.server.ts      # 服务端认证插件
+│   │   ├── locale.ts           # 语言初始化与SSR同步插件
+│   │   └── time-sync.client.ts # 客户端服务器时间对时插件
 │   ├── public/                # 静态文件目录
 │   │   ├── images/            # 图片资源
-│   │   │   ├── logo.png       # PNG格式Logo
-│   │   │   ├── logo.svg       # SVG格式Logo
-│   │   │   ├── search.svg     # 搜索图标
-│   │   │   └── thumbs-up.svg  # 点赞图标
+│   │   │   └── beian.png      # 备案图标
+│   │   ├── themes/            # 主题图片（按主题分目录，仅 SVG 随主题切换）
+│   │   │   ├── ClassicDark/          # 经典深色主题图片
+│   │   │   │   ├── logo.svg   # SVG格式Logo
+│   │   │   │   ├── search.svg # 搜索图标
+│   │   │   │   └── thumbs-up.svg # 点赞图标
+│   │   │   ├── ClassicLight/         # 经典亮色主题图片
+│   │   │   │   ├── logo.svg   # SVG格式Logo
+│   │   │   │   ├── search.svg # 搜索图标
+│   │   │   │   └── thumbs-up.svg # 点赞图标
+│   │   │   └── ModernLight/          # 现代浅色主题图片
+│   │   │       ├── logo.svg   # SVG格式Logo
+│   │   │       ├── search.svg # 搜索图标
+│   │   │       └── thumbs-up.svg # 点赞图标
 │   │   ├── favicon.ico        # 网站图标
 │   │   └── robots.txt         # 搜索引擎爬虫配置
+│   ├── workers/             # Web Worker
+│   │   └── audioEncoderWorker.js # 音频编码 Web Worker
 │   └── utils/                 # 工具函数
 │       ├── core/              # 核心工具
 │       │   └── security.ts    # 安全相关工具
+│       ├── data/                # 生成的数据表
+│       │   └── cjkT2sMap.ts    # 繁→简单字映射表
+│       ├── locale/            # 国际化语言资源
+│       │   ├── en-US.ts       # 英文语言包
+│       │   ├── index.ts       # 语言状态、切换及回退逻辑
+│       │   └── zh-CN.ts       # 简体中文语言包
 │       ├── lyric/             # 歌词处理工具
 │       │   ├── exclude.ts     # 歌词排除规则
 │       │   ├── lyricFormat.ts # 歌词格式化
+│       │   ├── lyricLanguage.ts # 歌词语言识别（CJK 混合上下文）
+│       │   ├── lyricMatchQuality.ts # 歌词版本一致性检测
 │       │   ├── lyricParser.ts # 歌词解析器
+│       │   ├── lyricText.ts   # 歌词行文本/音译提取
 │       │   ├── lyricStripper.ts # 歌词清理
 │       │   ├── parseLrc.ts    # LRC格式解析
 │       │   └── qrc-parser.ts  # QRC格式解析
 │       ├── bilibiliSource.ts  # 哔哩哔哩音源
+│       ├── cover-theme.ts    # 封面取色与歌词主题色（AMLL 调色板）
 │       ├── debounce.ts       # 防抖工具
+│       ├── esaCaptcha.ts     # 阿里云 ESA AI验证码区域与服务端节点共享常量
+│       ├── grade-class-input.ts # 年级班级批量输入解析
+│       ├── gradeClassWeights.js # 年级排序权重
+│       ├── invalidPlaybackUrls.ts # 播放端确认无效的地址登记（换源时跳过坏链）
 │       ├── lyricAdapter.ts    # 歌词适配器
+│       ├── markdown.js        # Markdown工具
 │       ├── musicSources.ts    # 音乐源配置
 │       ├── musicUrl.ts        # 音乐URL处理
+│       ├── pluginResolver.ts   # 插件音源搜索、歌词与媒体解析接入
+│       ├── pluginPlatform.ts # 插件音源平台键、插件 ID 与音质映射（LX Music / MusicFree）
+│       ├── platforms.ts       # 平台元数据共享（白名单/显示名/图标）
+│       ├── playerLayout.ts    # 播放器布局模式与自由拖拽坐标解析
+│       ├── blacklist.ts       # 歌曲类型黑名单候选值共享（语种/曲风）
+│       ├── sentryUpstreamMusicErrors.ts # Sentry 上游音源错误过滤
+│       ├── song-name-normalize.ts # 歌曲名称归一化匹配
 │       ├── neteaseApi.ts      # 网易云音乐API
+│       ├── qqCookie.ts        # QQ音乐登录Cookie存取与续期广播
+│       ├── qqUserLibrary.ts   # QQ音乐用户资料库（歌单/最近播放）
 │       ├── oauth-register.ts  # OAuth注册工具
+│       ├── email-verification.ts # 注册邮箱验证码
+│       ├── embedded-browser.ts # 微信/QQ内置浏览器UA检测
+│       ├── password-policy.ts # 统一密码策略
 │       ├── oauth.ts           # OAuth工具
+│       ├── autoSchedule.ts    # 自动排期算法
 │       ├── timeUtils.ts       # 时间工具
+│       ├── user-archive.ts    # 账号归档判定与筛选参数解析
+│       ├── webauthn.js        # WebAuthn浏览器兼容工具
+│       ├── print-image-cache.ts # 打印导出图片下载缓存
 │       └── url.ts             # URL处理工具
 ├── server/                # 服务端代码
 │   ├── api/                # API路由
@@ -708,30 +1025,63 @@ VoiceHub/
 │   │   │   │   ├── [id].put.ts      # 更新API密钥
 │   │   │   │   ├── index.get.ts     # 获取API密钥列表
 │   │   │   │   ├── index.post.ts    # 创建API密钥
-│   │   │   │   └── logs.get.ts      # API使用日志
+│   │   │   │   ├── logs.get.ts      # API使用日志
+│   │   │   │   └── permissions.ts   # API密钥权限定义
 │   │   │   ├── backup/              # 备份管理API
 │   │   │   │   ├── delete/          # 删除备份子目录
 │   │   │   │   │   └── [filename].delete.ts
 │   │   │   │   ├── download/        # 下载备份子目录
 │   │   │   │   │   └── [filename].get.ts
+│   │   │   │   ├── auto-config.get.ts   # 获取自动备份配置
+│   │   │   │   ├── auto-config.put.ts   # 更新自动备份配置
 │   │   │   │   ├── clear.post.ts    # 清空备份历史
 │   │   │   │   ├── download.get.ts  # 下载备份
 │   │   │   │   ├── export.post.ts   # 创建备份
+│   │   │   │   ├── history.get.ts   # 获取备份历史
+│   │   │   │   ├── history-clear.post.ts # 清空备份历史记录
 │   │   │   │   ├── list.get.ts      # 获取备份列表
 │   │   │   │   ├── restore-chunk.post.ts # 恢复备份分片
 │   │   │   │   ├── restore.post.ts  # 恢复备份
+│   │   │   │   ├── test-email.post.ts  # 测试邮件发送
+│   │   │   │   ├── test-s3.post.ts     # 测试 S3 连接
+│   │   │   │   ├── test-telegram.post.ts # 测试 Telegram Bot
+│   │   │   │   ├── test-webdav.post.ts  # 测试 WebDAV 连接
 │   │   │   │   └── upload.post.ts   # 上传备份文件
 │   │   │   ├── blacklist/           # 黑名单管理API
 │   │   │   │   ├── [id].delete.ts   # 删除黑名单项
 │   │   │   │   ├── [id].patch.ts    # 更新黑名单项
 │   │   │   │   ├── index.get.ts     # 获取黑名单列表
 │   │   │   │   └── index.post.ts    # 添加黑名单项
+│   │   │   ├── grade-class/         # 年级班级配置API
+│   │   │   │   ├── [id].delete.ts   # 删除配置项
+│   │   │   │   ├── by-grade.delete.ts # 按年级删除配置
+│   │   │   │   ├── initialize.post.ts # 从现有用户提取初始化
+│   │   │   │   ├── index.get.ts     # 获取配置列表
+│   │   │   │   └── index.post.ts    # 新增配置项
+│   │   │   ├── card-codes/          # 点歌券管理API
+│   │   │   │   ├── [id].put.ts      # 更新单张点歌券
+│   │   │   │   ├── create.post.ts   # 创建点歌券
+│   │   │   │   ├── delete.post.ts   # 删除点歌券
+│   │   │   │   ├── export.get.ts    # 导出点歌券
+│   │   │   │   ├── index.get.ts     # 获取点歌券列表
+│   │   │   │   ├── redeem-logs.get.ts # 获取点歌券日志
+│   │   │   │   └── update.post.ts   # 批量更新点歌券
 │   │   │   ├── database/            # 数据库管理API
 │   │   │   │   ├── cleanup.post.ts  # 数据库清理
 │   │   │   │   ├── performance.get.ts # 数据库性能监控
 │   │   │   │   ├── pool-status.get.ts # 连接池状态
 │   │   │   │   ├── reset.post.ts    # 重置数据库
 │   │   │   │   └── status.get.ts    # 数据库状态
+│   │   │   ├── music-source-plugins/ # 音源插件配置、启停、排序与验证
+│   │   │   │   ├── [id].delete.ts   # 移除音源插件
+│   │   │   │   ├── [id].put.ts      # 更新音源插件
+│   │   │   │   ├── [id]/            # 单个插件操作
+│   │   │   │   │   ├── enabled.patch.ts # 启用/停用
+│   │   │   │   │   ├── refresh.post.ts  # 重新加载插件产物
+│   │   │   │   │   └── test.post.ts     # 验证插件初始化
+│   │   │   │   ├── index.get.ts     # 插件列表与配置版本
+│   │   │   │   ├── index.post.ts    # 新增音源插件
+│   │   │   │   └── order.put.ts     # 保存解析优先级排序
 │   │   │   ├── db-status.get.ts     # 数据库状态检查
 │   │   │   ├── email-templates/     # 邮件模板管理API
 │   │   │   │   ├── index.delete.ts  # 删除邮件模板
@@ -740,6 +1090,11 @@ VoiceHub/
 │   │   │   │   └── preview.post.ts  # 预览邮件模板
 │   │   │   ├── fix-sequence.post.ts # 修复数据库序列
 │   │   │   ├── notifications/       # 管理员通知API
+│   │   │   │   ├── history/         # 通知批次明细API
+│   │   │   │   │   ├── [batchId].delete.ts # 删除通知批次
+│   │   │   │   │   ├── [batchId].get.ts # 查询批次用户已读明细
+│   │   │   │   │   └── [batchId].put.ts # 修改通知批次
+│   │   │   │   ├── history.get.ts   # 查询按发送批次归类的通知历史
 │   │   │   │   └── send.post.ts     # 发送通知
 │   │   │   ├── play-times/          # 播放时间管理API
 │   │   │   │   ├── [id].ts          # 播放时间操作
@@ -753,13 +1108,19 @@ VoiceHub/
 │   │   │   │   ├── index.post.ts    # 创建点歌时间
 │   │   │   │   └── index.ts         # 点歌时间列表
 │   │   │   ├── schedule/            # 排期管理API
+│   │   │   │   ├── bulk-draft.post.ts # 批量保存排期草稿
 │   │   │   │   ├── bulk-publish.post.ts # 批量发布排期
+│   │   │   │   ├── copy.post.ts     # 复制排期到指定日期
 │   │   │   │   ├── draft.post.ts    # 保存排期草稿
 │   │   │   │   ├── full.get.ts      # 获取完整排期数据（包含草稿）
 │   │   │   │   ├── move-date.post.ts # 排期日期迁移
 │   │   │   │   ├── publish.post.ts  # 发布排期草稿
+│   │   │   │   ├── remove-all-date.post.ts # 清空某日全部排期
 │   │   │   │   ├── remove.post.ts   # 移除排期
-│   │   │   │   └── sequence.post.ts # 更新排期顺序
+│   │   │   │   ├── sequence.post.ts # 更新排期顺序
+│   │   │   │   ├── song-pool.delete.ts # 从备选池移除歌曲
+│   │   │   │   ├── song-pool.get.ts   # 获取备选池列表
+│   │   │   │   └── song-pool.post.ts  # 歌曲加入备选池
 │   │   │   ├── schedule.post.ts     # 创建排期
 │   │   │   ├── semesters/           # 学期管理API
 │   │   │   │   ├── [id].delete.ts   # 删除学期
@@ -772,7 +1133,10 @@ VoiceHub/
 │   │   │   │   ├── test-connection.post.ts # 测试SMTP连接
 │   │   │   │   └── test-email.post.ts # 发送测试邮件
 │   │   │   ├── songs/               # 管理员歌曲管理API
+│   │   │   │   ├── batch-reject.post.ts  # 批量驳回歌曲
+│   │   │   │   ├── cover.post.ts    # 获取歌曲封面
 │   │   │   │   ├── delete.post.ts   # 删除歌曲
+│   │   │   │   ├── duration.post.ts # 更新歌曲时长
 │   │   │   │   ├── mark-played.post.ts  # 标记歌曲已播放
 │   │   │   │   └── reject.post.ts  # 驳回歌曲
 │   │   │   ├── stats.get.ts         # 统计数据
@@ -796,21 +1160,29 @@ VoiceHub/
 │   │   │       │   ├── songs.get.ts     # 获取用户点歌记录
 │   │   │       │   ├── status-logs.get.ts # 获取用户状态变更日志
 │   │   │       │   └── status.put.ts    # 更新用户状态
+│   │   │       ├── [id].approval.post.ts # 注册审核
 │   │   │       ├── [id].delete.ts   # 删除用户
 │   │   │       ├── [id].put.ts      # 更新用户
-│   │   │       ├── [id].ts          # 用户详情
+│   │   │       ├── [id].get.ts      # 用户详情
 │   │   │       ├── batch-grade-update.post.ts # 批量年级更新
 │   │   │       ├── batch-status.put.ts # 批量状态更新
 │   │   │       ├── batch-update.post.ts # 批量更新用户
 │   │   │       ├── batch.post.ts    # 批量操作用户
+│   │   │       ├── export.get.ts    # 导出用户列表
 │   │   │       ├── index.get.ts     # 获取用户列表
 │   │   │       ├── index.post.ts    # 创建用户
 │   │   │       ├── index.ts         # 用户管理
+│   │   │       ├── options.ts       # 用户管理选项
 │   │   │       └── status-logs.get.ts # 用户状态日志
 │   │   ├── api-enhanced/          # 网易云音乐API
 │   │   │   └── netease/           # 网易云增强接口代理
 │   │   │       └── [...path].ts   # 转发网易云API请求
 │   │   ├── auth/           # 认证API
+│   │   │   ├── captcha.get.ts         # 图形验证码
+│   │   │   ├── captcha-required.get.ts # 登录验证码预检
+│   │   │   ├── oauth-register-options.get.ts # OAuth注册选项
+│   │   │   ├── grade-class-options.get.ts # 年级班级选项
+│   │   │   ├── email-code.post.ts # 注册邮箱验证码发送
 │   │   │   ├── 2fa/             # 2FA验证API
 │   │   │   │   ├── send-email.post.ts # 发送2FA验证邮件
 │   │   │   │   └── verify.post.ts     # 验证2FA代码
@@ -832,6 +1204,7 @@ VoiceHub/
 │   │   │   ├── login.post.ts        # 用户登录
 │   │   │   ├── logout.post.ts       # 用户登出
 │   │   │   ├── oauth-register.post.ts # OAuth用户注册
+│   │   │   ├── register.post.ts       # 用户名密码注册
 │   │   │   ├── reset-password.post.ts # 重置密码
 │   │   │   ├── set-initial-password.post.ts # 设置初始密码
 │   │   │   ├── unbind.post.ts        # 解绑社交账号
@@ -841,21 +1214,50 @@ VoiceHub/
 │   │   │   └── search.get.ts        # Bilibili视频搜索
 │   │   ├── blacklist/      # 黑名单API
 │   │   │   └── check.post.ts        # 检查黑名单
+│   │   ├── card-codes/     # 点歌券API
+│   │   │   └── validate.post.ts     # 验证点歌券可用性
 │   │   ├── meow/           # MeoW账号绑定API
 │   │   │   ├── bind.post.ts         # 绑定MeoW账号
 │   │   │   └── unbind.post.ts       # 解绑MeoW账号
 │   │   ├── music/          # 音乐相关API
+│   │   │   ├── resolve-url.post.ts # 音乐播放链接统一解析
 │   │   │   ├── state.post.ts        # 音乐状态管理
 │   │   │   └── websocket.ts         # 音乐WebSocket连接
+│   │   ├── music-source-plugins/ # 统一音源插件接口
+│   │   │   ├── capabilities.get.ts  # 插件能力与平台列表
+│   │   │   ├── lyric.post.ts        # 插件歌词获取
+│   │   │   ├── media.get.ts         # 插件媒体代理
+│   │   │   ├── resolve.post.ts      # 插件播放链接解析与回退
+│   │   │   └── search.post.ts       # 插件搜索
 │   │   ├── native-api/     # 原生音乐API
+│   │   │   ├── comment/              # 评论API
+│   │   │   │   └── tx.get.ts         # QQ音乐评论
+│   │   │   ├── lyric/               # 歌词API
+│   │   │   │   ├── mg.get.ts        # 咪咕音乐歌词
+│   │   │   │   └── tx.get.ts        # 腾讯音乐歌词
+│   │   │   ├── migu/                # 咪咕音乐API
+│   │   │   │   └── playurl.get.ts    # 获取咪咕音乐播放链接
+│   │   │   ├── qq/                  # QQ音乐账号API
+│   │   │   │   ├── avatar.get.ts    # 获取QQ音乐头像
+│   │   │   │   ├── check-cookie.post.ts # 校验QQ音乐登录Cookie有效性
+│   │   │   │   ├── check-login.post.ts # 检查扫码登录情况
+│   │   │   │   ├── check-wx-login.post.ts # 检查微信扫码登录状态
+│   │   │   │   ├── login-qr.get.ts  # 获取QQ登录二维码
+│   │   │   │   └── login-qr-wx.get.ts # 获取微信登录二维码
+│   │   │   │   ├── playlist-songs.post.ts # 获取QQ音乐歌单内歌曲
+│   │   │   │   └── playlists.post.ts # 获取用户创建与收藏的歌单
 │   │   │   └── search/              # 搜索API
+│   │   │       ├── mg.get.ts        # 咪咕音乐搜索
 │   │   │       ├── tx.get.ts        # 腾讯音乐搜索
 │   │   │       └── wy.get.ts        # 网易云音乐搜索
+│   │   ├── platform-config/  # 平台管理公开API
+│   │   │   └── index.get.ts      # 获取平台启用与排序配置
 │   │   ├── notifications/  # 通知系统API
 │   │   │   ├── [id]/                # 通知操作子目录
 │   │   │   │   └── read.post.ts     # 标记通知已读
 │   │   │   ├── [id].delete.ts       # 删除通知
 │   │   │   ├── clear-all.delete.ts  # 清空所有通知
+│   │   │   ├── important.get.ts      # 获取最早一条未读重要通知
 │   │   │   ├── index.ts             # 通知列表
 │   │   │   ├── meow/                # MeoW通知API
 │   │   │   │   ├── send-verification.post.ts # 发送验证码
@@ -864,8 +1266,19 @@ VoiceHub/
 │   │   │   ├── settings.post.ts     # 更新通知设置
 │   │   │   └── settings.ts          # 获取通知设置
 │   │   ├── open/           # 开放API（无需认证）
+│   │   │   ├── card-codes/          # 点歌券开放API
+│   │   │   │   └── delete.post.ts   # 删除点歌券（兼容不支持 DELETE body 的代理）
+│   │   │   ├── card-codes.delete.ts # 删除点歌券
+│   │   │   ├── card-codes.get.ts    # 获取点歌券列表
+│   │   │   ├── card-codes.patch.ts  # 更新点歌券
+│   │   │   ├── card-codes.post.ts   # 创建点歌券
 │   │   │   ├── songs/               # 歌曲相关开放API
-│   │   │   │   └── mark-played.post.ts # 标记歌曲已播放（供外部调用）
+│   │   │   │   ├── mark-played.post.ts # 标记歌曲已播放（供外部调用）
+│   │   │   │   └── request.post.ts  # 使用个人集成令牌投稿歌曲
+│   │   │   ├── backup/              # 自动备份开放API
+│   │   │   │   ├── auto.post.ts     # 触发自动备份（需 API Key）
+│   │   │   │   └── status/          # 备份状态查询
+│   │   │   │       └── [id].get.ts  # 查询备份任务状态
 │   │   │   ├── schedules.get.ts     # 获取公开排期
 │   │   │   └── songs.get.ts         # 获取公开歌曲列表
 │   │   ├── play-times/     # 播放时间API
@@ -880,6 +1293,9 @@ VoiceHub/
 │   │   ├── semesters/      # 学期API
 │   │   │   ├── current.get.ts       # 获取当前学期
 │   │   │   └── options.get.ts       # 获取学期选项
+│   │   ├── legal-consent.get.ts      # 条款确认状态查询API
+│   │   ├── legal-consent.post.ts     # 条款同意记录API
+│   │   ├── legal-documents.get.ts    # 协议文档公开查询API
 │   │   ├── site-config.get.ts       # 站点配置API
 │   │   ├── songs/          # 歌曲相关API
 │   │   │   ├── [id]/                # 歌曲详情操作
@@ -892,13 +1308,17 @@ VoiceHub/
 │   │   │   ├── import.post.ts       # 导入歌曲
 │   │   │   ├── index.get.ts         # 歌曲列表
 │   │   │   ├── public.get.ts        # 公开歌曲列表
+│   │   │   ├── check-restriction.post.ts # 检查重复投稿限制
 │   │   │   ├── request.post.ts      # 点歌请求
 │   │   │   ├── replay.post.ts       # 提交重播申请
 │   │   │   ├── replay.delete.ts     # 撤回重播申请
 │   │   │   ├── submission-status.get.ts # 投稿状态
 │   │   │   ├── vote.post.ts         # 投票
 │   │   │   └── withdraw.post.ts     # 撤回歌曲
+│   │   ├── sys/            # 系统辅助API
+│   │   │   └── time.get.ts          # 获取校准后的服务器时间
 │   │   ├── system/         # 系统API
+│   │   │   ├── instance.get.ts      # 实例信息
 │   │   │   ├── location.get.ts      # 获取系统位置信息
 │   │   │   ├── reconnect.post.ts    # 重连数据库
 │   │   │   └── status.get.ts        # 系统状态
@@ -907,68 +1327,175 @@ VoiceHub/
 │   │   │   │   ├── disable.post.ts  # 关闭双重认证
 │   │   │   │   ├── enable.post.ts   # 开启双重认证
 │   │   │   │   └── generate.post.ts # 生成双重认证密钥
+│   │   │   ├── api-keys/          # 个人集成令牌API
+│   │   │   │   ├── [id].delete.ts # 删除个人集成令牌
+│   │   │   │   ├── [id]/logs.get.ts # 获取个人集成令牌调用日志
+│   │   │   │   ├── index.get.ts   # 获取个人集成令牌列表
+│   │   │   │   └── index.post.ts  # 创建个人集成令牌
 │   │   │   ├── email/               # 用户邮箱管理
 │   │   │   │   ├── bind.post.ts     # 绑定邮箱
 │   │   │   │   ├── resend-verification.post.ts # 重发验证邮件
 │   │   │   │   ├── send-code.post.ts # 发送验证码
 │   │   │   │   ├── unbind.post.ts   # 解绑邮箱
 │   │   │   │   └── verify-code.post.ts # 验证邮箱验证码
+│   │   │   ├── avatar.post.ts      # 设置 OAuth 头像来源
+│   │   │   ├── sessions.delete.ts    # 撤销登录会话
+│   │   │   ├── sessions.get.ts       # 获取登录会话列表
 │   │   │   └── year-review.get.ts   # 获取年度回顾数据
 │   │   └── users/          # 用户API
-│   │       ├── meow/                # 用户MeoW相关子目录
 │   │       ├── social-accounts/     # 社交账号管理
 │   │       │   ├── meow.delete.ts   # 删除MeoW绑定
 │   │       │   └── meow.post.ts     # MeoW账号操作
 │   │       ├── search.get.ts        # 搜索用户
 │   │       └── social-accounts.get.ts # 获取社交账号
+│   ├── card-codes/         # 点歌券相关
+│   │   └── statuses.ts     # 点歌券状态枚举定义
 │   ├── config/             # 服务端配置
 │   │   └── constants.ts    # 风控阈值与时间窗口常量
 │   ├── error.ts            # 全局错误处理
 │   ├── middleware/         # 服务端中间件
+│   │   ├── 00.request-id.ts # 请求ID注入中间件
 │   │   ├── api-auth.ts     # API认证中间件
 │   │   ├── api-cors.ts     # API跨域中间件
 │   │   └── auth.ts         # 认证中间件
 │   ├── plugins/            # 服务端插件
-│   │   └── error-handler.ts # 错误处理插件
+│   │   ├── 00.sentry.ts    # Sentry错误追踪插件
+│   │   ├── 01.pre-warm-ssr.ts # SSR预热插件
+│   │   ├── error-handler.ts # 错误处理插件
+│   │   ├── redis-lifecycle.ts # Redis短期状态连接生命周期
+│   │   └── statistics-code.ts # 站点统计代码注入插件
 │   ├── services/           # 业务服务层
 │   │   ├── apiLogService.ts # API日志服务
-│   │   ├── cacheService.ts # 缓存服务（Redis缓存管理）
+│   │   ├── autoBackupService.ts # 自动备份服务
+│   │   ├── cardCodeDeleteService.ts # 点歌券删除服务
+│   │   ├── cardCodeLifecycleService.ts # 点歌券生命周期服务
+│   │   ├── durationValidationService.ts # 歌曲时长校验与补齐服务
 │   │   ├── meowNotificationService.ts # MeoW通知服务
 │   │   ├── notificationService.ts # 通知服务
+│   │   ├── oauthConfigService.ts # OAuth提供商配置与状态服务
+│   │   ├── passwordSecurityService.ts # 密码操作审计与限流服务
 │   │   ├── securityService.ts # 安全服务
+│   │   ├── songRequestService.ts # 点歌投稿服务
 │   │   ├── smtpService.ts  # SMTP邮件服务
 │   │   └── userService.ts # 用户服务
 │   ├── utils/              # 服务端工具函数
+│   │   ├── admin-password-policy.ts # 管理员重置密码基础校验策略
+│   │   ├── apiError.ts     # 统一错误码抛出助手 createApiError
+│   │   ├── apiKeyUtils.ts  # API Key生成、哈希与校验
 │   │   ├── auth.ts         # 认证工具函数
+│   │   ├── auth-route-policy.ts # 强制改密期间的接口访问策略
 │   │   ├── bilibiliWbi.ts  # Bilibili WBI签名工具
-│   │   ├── cache-helpers.ts # 缓存辅助工具
+│   │   ├── captcha.ts      # 图形验证码生成工具
+│   │   ├── captchaStore.ts # 分布式短期状态与验证码哈希存储
+│   │   ├── card-code-delete-handler.ts # 点歌券删除开放API处理器
 │   │   ├── database-health.ts # 数据库健康检查
 │   │   ├── database-manager.ts # 数据库管理工具
 │   │   ├── geo.ts          # 地理位置工具
+│   │   ├── grade-class-core.ts # 年级班级选项纯函数
+│   │   ├── grade-class-options.ts # 年级班级选项提取工具
+│   │   ├── initial-password-policy.ts # 初始密码设置状态策略
+│   │   ├── important-notification-policy.ts # 重要通知发送与展示策略
+│   │   ├── notification-history-policy.ts # 通知批次引用、筛选与分页策略
+│   │   ├── instance-id.ts  # 实例ID管理工具
 │   │   ├── ip-utils.ts     # IP地址工具
 │   │   ├── jwt-enhanced.ts # JWT工具
 │   │   ├── log-manager.ts  # 日志管理工具
+│   │   ├── music-source-plugins/ # LX Music 与 MusicFree 音源插件运行时、沙箱与凭证管理
+│   │   │   ├── access.ts    # 后台权限、同源校验与调用限流
+│   │   │   ├── backup.ts    # 插件表备份清单与恢复写入
+│   │   │   ├── errors.ts    # 插件错误码构造
+│   │   │   ├── guest.js     # 注入沙箱的宿主环境与 __inspect/__invoke
+│   │   │   ├── manifest.ts  # 部署快照模块转发（实际快照为构建产物）
+│   │   │   ├── network.ts   # 出站请求校验、重定向与体积限制
+│   │   │   ├── platform.ts  # plugin:/musicfree: 平台键解析
+│   │   │   ├── prepare.ts   # 沙箱预置环境打包与脚本下载
+│   │   │   ├── resolver.ts  # 能力列表、搜索、解析回退与歌词
+│   │   │   ├── runtime.ts   # QuickJS/WASM 沙箱与协议适配
+│   │   │   ├── store.ts     # 配置读写、名称解析、产物落盘与刷新
+│   │   │   ├── tickets.ts   # 加密凭证签发与校验
+│   │   │   └── types.ts     # 插件类型定义
 │   │   ├── native_common.ts # 原生API通用工具
 │   │   ├── native_tx.ts    # 腾讯音乐原生API
 │   │   ├── native_wy.ts    # 网易云音乐原生API
+│   │   ├── oauth-providers.ts # OAuth提供商类型与纯函数工具
 │   │   ├── oauth-strategies.ts # OAuth策略配置
 │   │   ├── oauth-token.ts  # OAuth令牌工具
+│   │   ├── oauth-identity.ts # OAuth身份绑定与头像同步工具
 │   │   ├── oauth.ts        # OAuth通用工具
-│   │   ├── open-api-cache.ts # 开放API缓存
 │   │   ├── permissions.js  # 权限系统配置
-│   │   ├── redis.ts        # Redis连接和操作工具
+│   │   ├── qqComment.ts    # QQ音乐评论数据归一化
+│   │   ├── qq_music_sdk.ts # QQ音乐SDK调用封装
+│   │   ├── rateLimiter.ts  # 请求速率限制工具
+│   │   ├── legal-consent.ts # 条款内容指纹计算与注册同意校验
+│   │   ├── register-validation.ts # 注册校验纯函数
+│   │   ├── registration-notify.ts # 注册结果通知
+│   │   ├── redis.ts        # 可选Redis连接与命名空间工具
 │   │   ├── request-utils.ts # 请求处理通用工具
+│   │   ├── requireSongAdmin.ts # 歌曲管理员权限校验工具
+│   │   ├── song-duration-policy.ts # 歌曲时长归一化与补齐/清空决策
+│   │   ├── song-name-normalize.ts # 歌曲名称标准化匹配工具
+│   │   ├── song-type-resolver.ts # 歌曲类型（语种/曲风）解析工具
+│   │   ├── songCoverFetcher.ts # 外部平台歌曲封面获取工具
+│   │   ├── songDurationFetcher.ts # 外部平台歌曲时长获取工具
+│   │   ├── restoreScheduleSongPool.ts # 排期备选池恢复工具
+│   │   ├── s3Client.ts     # S3 兼容存储客户端（AWS Signature V4）
+│   │   ├── scheduleReplayBinding.ts # 排期发布时履行并绑定重播申请
+│   │   ├── scheduleSongPool.ts # 排期备选池统计工具
+│   │   ├── serverTime.ts   # 服务器时间工具
+│   │   ├── sequence-sync.ts # 自增序列同步工具
 │   │   ├── siteUtils.ts    # 站点工具函数
 │   │   ├── studentMask.ts  # 学生隐私工具
 │   │   ├── submissionLimit.ts # 投稿限额工具
+│   │   ├── submission-restriction-policy.ts # 重复投稿限制模式判定
 │   │   ├── system-settings-defaults.ts # 系统设置默认值
-│   │   ├── twoFactorStore.ts # 双重认证存储工具
+│   │   ├── system-settings-helper.ts # 系统设置读取与强制改密判断工具
+│   │   ├── theme-config.ts # 主题配置校验与解析工具
+│   │   ├── userDisplayName.ts # 同名用户消歧统一口径（仅在读用户参与统计）
+│   │   ├── telemetry.ts    # 遥测与错误追踪工具
 │   │   ├── user.ts         # 用户相关工具函数
+│   │   ├── user-archive.ts # 账号归档判定转发导出（权威实现在 app/utils）
+│   │   ├── user-avatar.ts  # OAuth 头像来源解析工具
+│   │   ├── user-filter.ts  # 用户列表/导出共用筛选条件构建
 │   │   ├── webauthn-config.ts # WebAuthn配置工具
 │   │   └── webauthn-token.ts # WebAuthn令牌工具
-│   ├── workers/            # 服务端工作进程
-│   │   └── audioEncoderWorker.js # 音频编码工作进程
 │   └── tsconfig.json       # 服务端TypeScript配置
+├── scripts/               # 构建、部署与数据库维护脚本
+│   ├── build.js           # 输出环境变量解析结果并执行插件构建与 Nuxt 构建
+│   ├── build-music-source-plugins.ts # 生成 Serverless 音源插件部署快照
+│   ├── check-deploy.js    # 部署前检查
+│   ├── clear-database.js  # 清空数据库
+│   ├── create-admin.js    # 创建管理员账户
+│   ├── db-sync.js         # 数据库同步
+│   ├── deploy.js          # 一键部署脚本
+│   ├── drizzle/           # Drizzle 迁移辅助脚本
+│   │   └── migrations/
+│   ├── netlify-build.js   # Netlify 构建脚本
+│   ├── postinstall.js     # 安装后脚本
+│   ├── redis-scan-legacy.js # 旧Redis业务缓存键dry-run扫描工具
+│   ├── reset-database.js  # 重置数据库
+│   └── safe-migrate.js    # 安全迁移（带备份）
+├── tests/                 # 自动化测试
+│   └── server/             # 服务端策略与安全测试
+│       ├── auth-route-policy.test.ts # 强制改密路由策略测试
+│       ├── cors-origin-policy.test.ts # CORS 来源协议匹配测试
+│       ├── cover-image-url.test.ts # 封面尺寸参数处理测试
+│       ├── esa-captcha.test.ts # 阿里云 ESA AI验证码区域与服务端节点解析测试
+│       ├── important-notification-policy.test.ts # 重要通知策略测试
+│       ├── initial-password-policy.test.ts # 初始密码状态策略测试
+│       ├── invalid-playback-urls.test.ts # 无效播放地址登记与淘汰测试
+│       ├── lyric-lrc-parse.test.ts # LRC 混合精度毫秒时间戳解析测试
+│       ├── music-source-plugin-platform.test.ts # 插件平台键解析测试
+│       ├── music-source-runtime.test.ts # 插件沙箱与网络策略测试
+│       ├── notification-history-policy.test.ts # 通知批次引用、筛选与分页策略测试
+│       ├── oauth-state-cookie.test.ts # OAuth state Cookie 安全测试
+│       ├── password-policy.test.ts # 密码策略测试
+│       ├── player-layout.test.ts # 播放器自由拖拽限位与偏好解析测试
+│       ├── qq-comment-normalize.test.ts # QQ音乐评论归一化测试
+│       ├── song-duration-policy.test.ts # 歌曲时长归一化与补齐决策测试
+│       ├── submission-restriction-policy.test.ts # 重复投稿限制模式判定测试
+│       ├── token-version-policy.test.ts # 令牌版本策略测试
+│       ├── user-archive.test.ts # 账号归档筛选参数解析测试
+│       └── user-avatar.test.ts # OAuth 头像来源解析测试
 ├── types/                 # TypeScript类型定义
 │   ├── global.d.ts         # 全局类型定义
 │   └── index.ts            # 通用类型定义
@@ -978,13 +1505,23 @@ VoiceHub/
 ├── docker-compose/        # Docker Compose配置目录
 ├── docker-compose.yml     # Docker编排文件
 ├── Dockerfile             # Docker构建文件
+├── Dockerfile-postgres    # PostgreSQL Docker构建文件
 ├── drizzle.config.ts      # Drizzle配置文件
+├── edgeone.json           # EdgeOne Pages 部署配置
+├── eslint.config.mjs      # ESLint 配置
+├── flake.lock             # Nix flake锁定文件
+├── flake.nix              # Nix构建与NixOS模块配置
+├── fnos/                  # 飞牛 OS 安装包相关配置
 ├── LICENSE                # 开源许可证文件
 ├── netlify.toml           # Netlify部署配置
 ├── nuxt.config.ts         # Nuxt 4主配置文件
 ├── package.json           # Node.js项目配置和依赖
+├── pnpm-lock.yaml         # pnpm 依赖锁定文件
+├── pnpm-workspace.yaml    # pnpm 依赖构建许可配置
 ├── README.md              # 项目说明文档
+├── sh/                    # 一键部署脚本目录
 ├── tsconfig.json          # TypeScript配置文件
+├── UPGRADE.md             # 升级指南
 └── vercel.json            # Vercel部署配置
 ```
 
@@ -993,8 +1530,8 @@ VoiceHub/
 #### 核心目录 (app/)
 
 - **`app/components/`**: Vue组件库，按功能模块组织
+  - **`Account/`**: 账号管理组件（社交账号绑定等）
   - **`Admin/`**: 管理后台组件（排期、用户、数据分析等）
-  - **`Admin_Backup/`**: 管理组件备份目录
   - **`AMLL/`**: Apple Music-Like Lyrics歌词播放器组件
   - **`Auth/`**: 认证相关组件（登录、OAuth绑定等）
   - **`Common/`**: 通用业务组件
@@ -1032,8 +1569,57 @@ VoiceHub/
 
 #### 静态资源
 
-- **`app/public/`**: 静态文件
-- **`app/public/images/`**: 图片资源，包含Logo和图标文件
+- **`public/`**: 静态文件
+- **`public/images/`**: 备案图标等与主题无关的图片
+- **`public/assets/`**: 不随主题切换的公共资源（如 `logo.png`）
+- **`public/themes/{ClassicDark,ClassicLight,ModernLight}/`**: 随主题切换的 SVG 图片资源（Logo、搜索图标、点赞图标）
+
+### 主题系统
+
+VoiceHub 采用 CSS 变量驱动的主题架构，支持深色与亮色两种主题模式，包含经典与现代两种设计风格。主题文件按功能模块组织在 `app/assets/css/themes/` 目录下：
+
+#### 目录结构
+
+```
+app/assets/css/themes/
+├── ClassicDark.css       # 深色主题设计变量（:root[data-theme="ClassicDark"]）
+├── ClassicLight.css      # 亮色主题设计变量（:root[data-theme="ClassicLight"]）
+└── ModernLight.css       # 现代浅色主题设计变量（:root[data-theme="ModernLight"]）
+```
+
+#### 架构说明
+
+- **CSS 变量分离**：每个主题在独立的 CSS 文件中定义 `:root[data-theme="主题名"]` 选择器，包含所有设计变量（颜色、背景、文字、边框等）
+- **引入方式**：`app/assets/css/main.css` 通过 `@import` 引入主题文件，各主题按需引入
+- **切换机制**：通过 `useTheme()` composable 和 `theme.client.ts` 插件实现主题切换与 localStorage 持久化
+
+#### 主题图片管理
+
+主题相关的图片资源：**SVG 图片**（随主题切换，存放在 `public/themes/{ClassicDark,ClassicLight,ModernLight}/`）
+
+- **SVG 主题图片存放位置**：`public/themes/ClassicLight/`（亮色主题）、`public/themes/ClassicDark/`（深色主题）和 `public/themes/ModernLight/`（现代浅色主题）
+- **管理方式**：SVG 图片通过 `useThemeImage()` composable 统一获取，PNG 图片直接使用静态路径
+- **使用示例**：
+  ```vue
+  <script setup>
+  import { useThemeImage } from '~/composables/useThemeImage'
+  const { getLogo, getSearchIcon, getThumbsUpIcon } = useThemeImage()
+  </script>
+  <template>
+    <img :src="getLogo()" alt="Logo" />
+    <img src="/assets/logo.png" alt="Logo PNG" />
+  </template>
+  ```
+- **同步规则**：新增主题时需在 `app/assets/css/themes/` 下创建对应的 CSS 文件，**同时**在 `public/themes/` 下创建对应的图片目录并放入 SVG 文件。如果只新增 CSS 主题而未同步图片，组件将无法加载主题图片。
+
+#### 自定义主题
+
+如需新增自定义主题：
+
+1. 在 `app/assets/css/themes/` 下创建新主题，如 `ocean.css`，使用 `:root[data-theme="ocean"]` 作为根选择器定义所有设计变量
+3. 在 `app/assets/css/main.css` 中添加对应的 `@import` 语句
+4. 在 `app/composables/useTheme.ts` 中将新主题 ID 加入 `Theme` 类型和 `THEMES` 数组
+5. 在 `public/themes/` 下创建对应主题的 SVG 图片文件夹（如 `public/themes/ocean/`），**放入与 `ClassicDark/` 和 `ClassicLight/` 相同的 SVG 图片**，否则使用该主题时组件无法加载主题图片。
 
 ## 使用说明
 
@@ -1250,6 +1836,51 @@ psql -h localhost -U username -d database_name < backup.sql
 4. 确保同时更新 `types/index.ts` 中的TypeScript类型定义
 5. 使用Drizzle Studio查看数据库：`pnpm run db:studio`
 
+### 国际化 (i18n)
+
+VoiceHub 内置一套无第三方依赖的手写国际化方案，支持 `zh-CN`（简体中文）与 `en-US`（English）两种语言。
+
+#### 架构概览
+
+- **词典文件**：`app/utils/locale/zh-CN.ts`、`app/utils/locale/en-US.ts`。两者结构必须完全一致（键对齐），值可为字符串、带 `{0}`/`{1}` 占位符的模板或格式化函数。
+- **运行时**：`app/utils/locale/index.ts` 提供 `useLocale()`、`setLocale()`、`loadLocaleMessages()` 等。
+  - 中文（`FALLBACK_LOCALE`）作为**兜底与合并基底静态内置**；其余语言在被激活时才**动态按需加载**，默认语言用户不会下载多余语言包。
+  - `mergeLocaleFallback` 保证非兜底语言缺失某键时自动回退中文，不会出现空文本。
+  - 当前语言用 `useState('voicehub-locale')` 存储，**SSR 下按请求隔离**，避免跨请求语言串扰。
+- **初始化插件**：`app/plugins/locale.ts`（服务端 + 客户端通用）。仅当用户手动选择过语言（`manual` 偏好）时信任 `cookie`，否则每次进入按 `Accept-Language` / 浏览器语言**跟随系统语言**，系统语言变化后自动切换；手动选择长期保留。渲染前 `await` 目标语言词典以消除首屏闪烁与水合不匹配，并驱动 `<html lang>`。
+
+#### 组件中使用
+
+```js
+// 取带兜底的响应式文案分区
+const { pages, songs } = useLocale()
+const locale = computed(() => pages.value?.forgotPassword || {})
+
+// 键查找 + {0}/{count} 占位符替换（复用共享助手，勿自行实现）
+const { t } = useLocaleText(locale)
+t('title')
+```
+
+- 文案访问统一复用 `~/composables/useLocaleText.ts`（`t`/`msg`/`nested`/`format`）与 `~/composables/useSafeLocale.ts`，**禁止**在组件内重复实现 `callLocale`、`getNestedMessage` 等私有取值函数。
+- 新增文案键时，**必须同时在 `zh-CN.ts` 和 `en-US.ts` 添加**，保持键结构完全一致。
+
+#### 服务端错误码本地化
+
+服务端错误消息与语言解耦，通过「稳定错误码 + 客户端词典」实现本地化：
+
+1. 服务端抛错使用 `createApiError`（`server/utils/apiError.ts`）而非裸 `createError`：
+
+   ```ts
+   import { createApiError } from '~~/server/utils/apiError'
+   // createApiError(statusCode, code, message, data?)
+   throw createApiError(429, 'AUTH_RATE_LIMITED_MINUTES', '操作过于频繁，请等待 ${waitMinutes} 分钟后再试', { params: [waitMinutes] })
+   ```
+
+   - `code` 建议取自 `server/config/constants.ts` 的 `SERVER_ERROR_CODES`；同时写入 `statusMessage` 与 `data.code`。
+   - `message` 为默认兜底文案（词典未命中时展示），动态值用 `data.params` 承载。
+2. 客户端统一用 `useServerErrors().localize(err, fallback)` 展示错误：按 `err.data.code` 命中 `serverErrors` 词典，用 `data.params` 替换 `{0}`/`{1}`，未命中再回退服务端 `message`。
+3. 新增错误码需在**三处同步**：`SERVER_ERROR_CODES`、`zh-CN.ts` 的 `serverErrors`、`en-US.ts` 的 `serverErrors`（键完全对齐）。
+
 ### OAuth 平台扩展指南
 
 VoiceHub 采用配置化与策略模式（Strategy Pattern）相结合的灵活 OAuth 扩展机制，所有 OAuth 提供商及认证设置现均已迁移至管理员后台界面。你可以直接在后台动态配置，无需修改环境变量和重启服务。
@@ -1333,6 +1964,7 @@ const strategies: Record<string, OAuthStrategy> = {
 项目已内置对 [Casdoor](https://casdoor.org/) 的支持。Casdoor 是一个开源的 UI 优先的身份认证管理系统 (IAM)，支持 OAuth 2.0、OIDC 等多种协议。
 
 要启用 Casdoor 登录，只需进入管理员后台的 **站点配置 -> OAuth 第三方登录配置**，开启 Casdoor 选项，并填入以下信息：
+
 - **Casdoor 服务器 URL** (如 `https://your-casdoor-domain.com`)
 - **Casdoor Client ID**
 - **Casdoor Client Secret**
@@ -1451,7 +2083,17 @@ const confirmUnbind = (provider) => {
 
 ### 音源扩展开发指南
 
-VoiceHub 采用了模块化的音源架构，支持多音源故障转移和动态扩展。开发者可以轻松添加新的音乐API源，提高系统的可用性和音乐资源覆盖率。
+VoiceHub 采用了模块化的音源架构，支持多音源故障转移和动态扩展。开发者可以在后台录入多个 LX Music 或 MusicFree 插件 JavaScript 直链，提高系统的可用性和音乐资源覆盖率。URL、插件参数、启用状态和优先级只保存在数据库，不再读取音源环境变量或本地目录。
+
+#### 音源插件运行时说明
+
+- **平台键**：插件音源统一使用 `plugin:<插件ID>` 作为歌曲平台标识，LX Music 与 MusicFree 插件共用同一套键；旧数据里的 `musicfree:<插件ID>` 继续识别。
+- **兼容协议**：运行时兼容 LX Music 的 `lx.on` / `lx.send` / `lx.request` 协议，以及 MusicFree 的 CommonJS `search`、`getMediaSource`、`getLyric` 协议。协议可自动识别，也可以在后台明确指定。LX Music 音源作为内置平台的解析器参与回退，声明了搜索能力的插件才会出现在搜索平台列表。
+- **安全执行**：第三方脚本在 QuickJS/WASM 中运行，不会直接导入 Nitro 主进程。宿主仅提供受限 HTTP、加密、压缩、随机数和日志能力；网络请求会校验协议、重定向、DNS 和内网地址，并受限于超时、内存、响应体积与并发数。
+- **常驻部署**：Node/Docker 保存或刷新插件后立即下载、校验并原子切换到新版本。下载或验证失败时，已生效版本继续服务；启用开关和拖拽排序立即生效。
+- **Serverless 部署**：构建时 `pnpm run build:plugins` 从数据库读取配置并生成部署快照。下载或验证失败的插件不会写入快照，仅跳过该插件，不终止部署。新增或修改脚本在下一次部署后生效；已部署版本的启用开关和排序仍从数据库读取。
+- **回退与播放**：搜索、歌词和播放链接会按启用且排序后的插件依次尝试。媒体链接经受限代理提供 Range 支持，服务端保存加密的短期选择凭证，避免插件特有字段在后续播放时丢失。
+- **配置与备份**：插件参数加密保存，管理接口仅返回是否已配置；脚本 URL 会脱敏展示。系统数据备份包含插件配置、版本和歌曲的插件选择数据。
 
 #### 音源架构概述
 
@@ -1647,9 +2289,7 @@ export const MUSIC_SOURCE_CONFIG: MusicSourceConfig = {
   enableFailover: true, // 启用故障转移
   timeout: 10000, // 默认超时时间
   retryAttempts: 2, // 重试次数
-  sources: [
-    /* 音源列表 */
-  ]
+  sources: [/* 音源列表 */]
 }
 ```
 
@@ -1729,26 +2369,75 @@ const transformMusicApiResponse = (response: any): any[] => {
 }
 ```
 
+## 贡献说明
+
+如果您希望为 VoiceHub 贡献代码，请注意以下几点，特别是涉及数据库变更时：
+
+1. **数据库迁移文件**：
+   - 任何对 `schema.ts` 的更改都**必须**伴随相应的迁移文件。
+   - 迁移文件需要使用有意义的命名。请通过命令 `pnpm exec drizzle-kit generate --name=your_meaningful_name` 生成。
+2. **备份与恢复支持**：
+   - 当向系统设置（`systemSettings`）或其它关键表添加新字段时，**必须**同步更新数据备份和恢复的相关端点。
+   - 需要检查并更新的文件：
+     - `server/api/admin/backup/restore.post.ts`（`systemSettingsFields` 数组等）
+     - `server/api/admin/backup/restore-chunk.post.ts`（`fields` 数组等）
+3. **提交规范**：
+   - 请确保在提交 PR 前至少在本地测试过相关功能。
+   - 请使用标准的 Git 提交规范。
+
 ## 音乐服务免责声明
 
 VoiceHub 是一款开源的校园广播站点歌管理系统。本软件遵循 GPLv3 协议开源，但请注意在使用过程中涉及的第三方服务和内容可能受相关法律法规限制。
 
 ### 关于音乐内容与版权
+
 - 本系统**不存储任何音乐文件**，不拥有任何音乐的版权；
 - 所有音乐资源、播放及下载链接均来自**第三方音乐平台 API**；
 - 音乐内容的版权、著作权归相应版权方及音乐平台所有。
 
 ### 关于功能说明
+
 - 本系统提供**音乐搜索、播放链接获取、音乐下载辅助**功能；
 - 系统仅做接口调用与工具呈现，不生产、不篡改音乐内容。
 
 ### 法律与责任声明
+
 - 用户使用本系统进行播放、下载等行为，**须自行遵守所在地区版权法律法规及第三方平台服务协议**；
 - 用户需自行确保对本系统的使用不侵犯第三方权益（如音乐版权方、API提供方等），特别是涉及商业用途时，请务必确认是否获得相应授权；
 - 因用户使用不当、侵权用途所产生的一切法律责任，由**用户自行承担**，项目开发者不承担连带责任；
 - 若版权方认为相关功能或接口使用侵犯其合法权益，请联系我们，我们将立即配合整改。
 
 用户使用本系统即表示已阅读、理解并同意以上条款。
+
+## 隐私说明与遥测
+
+VoiceHub 内置可选的错误遥测功能，用于帮助开发者快速定位和修复系统问题。
+
+### 遥测默认状态
+
+- 遥测功能**默认开启**，但**可在管理员后台随时关闭**（站点配置 → 启用错误追踪与遥测）
+
+### 收集的数据范围
+
+系统通过 Sentry 仅收集以下**技术性信息**（不涉及任何个人隐私）：
+
+- **错误堆栈与消息**：前端 Vue 错误、服务端未捕获异常和未处理 Promise 拒绝的技术信息
+- **实例标识符**：系统安装时生成的随机 UUID（仅用于区分不同部署实例，不可用于识别个人）
+- **实例心跳**：系统启动时发送一条 `instance_online` 消息（仅含实例 ID），用于统计活跃部署实例数量，不包含任何业务数据
+- **请求上下文**：请求方法、URL 路径（**不含查询参数，避免泄露令牌**）、HTTP User-Agent
+- **运行时环境**：运行平台（Vercel/Netlify/自托管）、Node.js 版本、Nitro 预设
+- **前端组件名称**：出错的 Vue 组件名称（仅用于定位前端问题）
+
+### 安全保障
+
+- 所有 HTTP 4xx 业务错误（如认证失败、权限不足）**自动忽略**，不会上报 Sentry
+- 前端网络离线状态和浏览器扩展产生的错误**自动过滤**
+- 数据通过加密通道传输至 Sentry
+- 遥测开关变更即时生效，无需重启服务
+
+### 数据接收方
+
+错误数据由 [Sentry](https://sentry.io/) 处理，仅用于错误排查与系统稳定性改进。
 
 ## 致谢
 
@@ -1776,26 +2465,41 @@ Thanks goes to these wonderful people:
 - [Sound-of-experiment - 实验之声广播站点歌系统](https://github.com/ljk743121/Sound-of-experiment) (哔哩哔哩音源搜索功能参考)
 - [Bilibili-audio-extraction](https://github.com/rio4raki/Bilibili-audio-extraction) (哔哩哔哩音频流获取参考)
 - [SPlayer](https://github.com/imsyy/SPlayer)
+- [SPlayer-Next](https://github.com/SPlayer-Dev/SPlayer-Next)
+- [Apple Music-like Lyrics](https://github.com/amll-dev/applemusic-like-lyrics)
 - [official-website - Sparkinit](https://github.com/Sparkinit/official-website)
-- [Netease_url](https://github.com/Suxiaoqinx/Netease_url)
+- [MusicAPI-rrvenn](https://music.rrvenn.cn)
+- [qq-music-api](https://github.com/sansenjian/qq-music-api) (QQ音乐歌词获取参考)
 
 ## 许可证
 
 [GPL-3.0](LICENSE)
 
-## 星标历史
+## Star History
 
-<picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=laoshuikaixue/VoiceHub&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=laoshuikaixue/VoiceHub&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=laoshuikaixue/VoiceHub&type=Date" />
+<a href="https://www.star-history.com/?repos=laoshuikaixue%2FVoiceHub&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=laoshuikaixue/VoiceHub&type=date&theme=dark&legend=top-left&sealed_token=JVSllfBpQvo-lUL1pD1tGnYru0EWt_m7SH5emqWolyH1w9767FJw5Sgo6EAyadezWyEifZuASniT84NxukOHxhQP6mck7BwHsXrdCFf44oHK98DoSPZtFw" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=laoshuikaixue/VoiceHub&type=date&legend=top-left&sealed_token=JVSllfBpQvo-lUL1pD1tGnYru0EWt_m7SH5emqWolyH1w9767FJw5Sgo6EAyadezWyEifZuASniT84NxukOHxhQP6mck7BwHsXrdCFf44oHK98DoSPZtFw" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=laoshuikaixue/VoiceHub&type=date&legend=top-left&sealed_token=JVSllfBpQvo-lUL1pD1tGnYru0EWt_m7SH5emqWolyH1w9767FJw5Sgo6EAyadezWyEifZuASniT84NxukOHxhQP6mck7BwHsXrdCFf44oHK98DoSPZtFw" />
  </picture>
+</a>
 
 ## 其他
 
 本项目有对应的原生鸿蒙版本：https://github.com/laoshuikaixue/VoiceHub-hmos
 
 该项目通过创新的混合架构设计，实现了Web端Vue音频播放器与鸿蒙原生端的跨平台音频控制同步
+
+<h2 id="sponsor">赞助支持</h2>
+
+如果这个项目对你有帮助，欢迎赞助支持，让我有更多动力持续维护和更新。
+
+<div align="center">
+
+<img width="200" alt="wechat" src="https://github.com/user-attachments/assets/0cd13f75-bd9c-4486-8bba-a8895e2e55fd" />
+
+</div>
 
 ---
 
